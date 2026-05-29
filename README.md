@@ -1,92 +1,170 @@
-Uber Data Analysis — New York City (2014–2015)
-📓 Notebook : uber_analysis_austin_mathew.ipynb
+
+# 🚖 Uber NYC Pickup Analysis
+### Exploratory Data Analysis · Python · Plotly · Folium
+
+![Python](https://img.shields.io/badge/Python-3.9-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)
+![Jupyter](https://img.shields.io/badge/Jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white)
+
+
 ---
-Problem Statement
-This project analyses Uber pickup data across New York City to uncover demand patterns at both a macro and micro level. The goal is to answer key operational and behavioural questions: When does demand peak? Where does demand concentrate? Which dispatch bases drive the majority of trips? And how does airport-specific demand behave across the day?
-By identifying these patterns, ride-hailing operators and city planners can optimise driver allocation, reduce wait times, and anticipate surge demand by time, location, and day of week.
+
+## 📌 Overview
+
+This project explores **15M+ Uber pickup records** across New York City spanning 2014–2015. The goal is to uncover demand patterns that answer three core questions:
+
+- 📅 **When** does demand peak — by month, weekday, and hour?
+- 📍 **Where** do rides concentrate across the city?
+- 🚏 **Which** dispatch bases and airports drive the most volume?
+
 ---
-Datasets Used
-File	Description
-`uber-raw-data-janjune-15_sample.csv`	~1M sampled pickups from Jan–Jun 2015 (sample of 15M row full dataset)
-`uber-raw-data-apr14.csv` … `uber-raw-data-sep14.csv`	Monthly raw pickup data, Jul–Sep 2014
-`Uber-Jan-Feb-FOIL.csv`	FOIL-requested data with active vehicle counts per dispatching base
+
+## 📂 Datasets
+
+| File | Description |
+|------|-------------|
+| `uber-raw-data-janjune-15_sample.csv` | ~1M sampled pickups, Jan–Jun 2015 |
+| `uber-raw-data-apr14.csv` → `sep14.csv` | Monthly raw pickups, Apr–Sep 2014 |
+| `Uber-Jan-Feb-FOIL.csv` | Active vehicle counts per dispatch base (FOIL data) |
+
+> The full Jan–Jun 2015 dataset contains ~15 million rows. The sample (~1M rows) is used for performance.
+
 ---
-Steps Followed
-Step 1 : Loaded the Jan–Jun 2015 sample dataset into a Pandas DataFrame.
-Step 2 : Performed data quality checks — identified and removed duplicate rows (verified via `.duplicated().sum()`), confirmed no missing values except in derived columns.
-Step 3 : Converted the `Pickup_date` column from `object` dtype to `datetime64` using `pd.to_datetime()`.
-Step 4 : Extracted derived time features — `month`, `weekday`, `day`, `hour`, and `minute` — from the datetime column for time-series and categorical analysis.
-Step 5 : Built a cross-tab pivot table (`pd.crosstab`) of pickups by Month × Weekday and visualised it as a grouped bar chart using Plotly Express.
-Step 6 : Analysed hourly rush patterns by weekday using a `groupby` on `['weekday', 'hour']`, with a Categorical sort to maintain correct weekday order, then plotted as a multi-line chart.
-Step 7 : Performed a Pareto Analysis on dispatching base numbers to identify which bases account for 80% of all trips, using a dual-axis bar + cumulative line chart (`plotly.graph_objs`).
-Step 8 : Conducted Airport Demand Analysis — filtered pickups by LocationIDs for EWR, JFK, and LGA, then charted hourly pickup volume per airport using a Plotly area chart.
-Step 9 : Combined the six monthly 2014 raw files programmatically using `os.listdir()` + `pd.concat()` into a unified `final` DataFrame, removing duplicates post-merge.
-Step 10 : Identified geographic rush hotspots across NYC using `folium.HeatMap` and `HeatMapWithTime` (animated hourly heatmap) on a CartoDB basemap.
-Step 11 : Built a Day × Hour pivot heatmap using `.groupby(['day','hour']).size().unstack()` with Pandas `.style.background_gradient()` for at-a-glance rush pattern identification.
-Step 12 : Wrapped the pivot heatmap logic into a reusable `gen_pivot_table(df, col1, col2)` function to automate pairwise analysis across any two categorical/time columns.
+
+## 🔍 Analysis Breakdown
+
+### 1 · Data Cleaning & Preparation
+- Removed duplicate rows using `.duplicated()` and `.drop_duplicates()`
+- Converted `Pickup_date` from `object` → `datetime64` via `pd.to_datetime()`
+- Extracted time features: `month`, `weekday`, `day`, `hour`, `minute`
+
+### 2 · Monthly & Weekday Demand
+- Cross-tab pivot (`pd.crosstab`) of pickups by **Month × Weekday**
+- Visualised as a **grouped bar chart** using Plotly Express
+
+### 3 · Hourly Rush by Day of Week
+- Grouped pickups by `['weekday', 'hour']` with proper categorical sorting
+- Plotted as a **multi-line chart** across all 24 hours
+
+### 4 · Pareto Analysis — Dispatch Bases
+- Calculated each base's share of total trips and cumulative percentage
+- Dual-axis **Pareto chart** (bar + line) with 80% threshold marker
+
+### 5 · Airport Demand Analysis
+- Filtered pickups by LocationID for **EWR, JFK, and LGA**
+- **Area chart** showing hourly demand pressure per airport
+
+### 6 · Geographic Hotspot Mapping
+- **Static heatmap** (`folium.HeatMap`) — full pickup density across NYC
+- **Animated heatmap** (`HeatMapWithTime`) — hourly demand movement on a CartoDB basemap
+
+### 7 · Day × Hour Pivot Heatmap
+- Built with `.groupby(['day','hour']).size().unstack()`
+- Styled with Pandas `.style.background_gradient()` for instant pattern recognition
+
+### 8 · Reusable Analysis Function
+- Wrapped pivot logic into `gen_pivot_table(df, col1, col2)` for flexible pairwise analysis
+
 ---
-Visualisations
-📊 Grouped Bar Chart — Monthly pickups broken down by weekday
-📈 Multi-Line Chart — Hourly pickup demand by day of week (24-hour view)
-📉 Pareto Chart — Dispatching base trip share with 80% threshold line
-🗺️ Area Chart — Hourly airport demand pressure (EWR vs JFK vs LGA)
-🔥 Folium Static Heatmap — Geographic density of all pickups across NYC
-🌊 Folium HeatMapWithTime — Animated hourly heatmap showing rush movement
-🎨 Gradient Pivot Table — Day × Hour pickup matrix with background gradient styling
-🎻 Box & Violin Plots — Active vehicle distribution per dispatching base
+
+## 📊 Visualisations
+
+| Chart | Library | Purpose |
+|-------|---------|---------|
+| Grouped Bar Chart | Plotly Express | Monthly pickups × weekday |
+| Multi-Line Chart | Plotly Express | Hourly rush by day of week |
+| Pareto Chart | Plotly Graph Objects | Dispatch base trip share |
+| Area Chart | Plotly Express | Airport hourly demand |
+| Static Heatmap | Folium | Geographic pickup density |
+| Animated Heatmap | Folium (HeatMapWithTime) | Hourly demand movement |
+| Gradient Pivot | Pandas Styler | Day × Hour rush matrix |
+| Box & Violin | Plotly Express | Active vehicles per base |
+
 ---
-Key Insights
-[1] Monthly & Weekly Demand
-June records the highest number of Uber pickups among the Jan–Jun 2015 sample.
-Friday and Saturday consistently show the highest daily demand across all months, suggesting weekend leisure and nightlife activity drive a significant share of rides.
-[2] Hourly Rush Patterns
-Saturday and Sunday show similar demand trends through the morning but diverge in the evening — Saturday demand keeps climbing late into the night, while Sunday tapers off after the early evening.
-Thursday nights exhibit demand trends almost identical to Friday and Saturday, suggesting New Yorkers begin their effective weekend on Thursday.
-[3] Dispatching Base (Pareto)
-A small number of dispatch bases account for ~80% of all Uber trips, confirming the Pareto principle applies to ride-hailing base distribution.
-[4] Airport Demand
-JFK and LGA dominate airport pickup volumes. Demand at all three airports spikes in the early morning and again during the evening rush, consistent with major flight departure/arrival windows.
-[5] Geographic Hotspots
-Midtown Manhattan is the single brightest hotspot on the heatmap.
-High-density zones extend from Midtown down to Lower Manhattan, with secondary clusters in Upper Manhattan and the Heights of Brooklyn.
+
+## 💡 Key Insights
+
+**Monthly & Weekly Demand**
+> June has the highest pickup volume in the 2015 sample. Fridays and Saturdays dominate demand across every month.
+
+**Hourly Patterns**
+> Saturday and Sunday follow similar morning trends but diverge sharply in the evening — Saturday climbs all night while Sunday drops off early. Thursday nights mirror Friday/Saturday levels, suggesting New Yorkers effectively start their weekend on Thursday.
+
+**Dispatch Bases (Pareto)**
+> A minority of dispatch bases account for ~80% of all trips — a clear Pareto distribution in ride-hailing operations.
+
+**Airport Demand**
+> JFK and LGA lead in volume. All three airports (EWR, JFK, LGA) spike during early morning and evening hours, aligned with peak flight windows.
+
+**Geographic Hotspots**
+> Midtown Manhattan is the dominant hotspot. High-density corridors extend south to Lower Manhattan, with secondary clusters in Upper Manhattan and the Heights of Brooklyn.
+
 ---
-Tech Stack
-Tool	Purpose
-Python 3	Core language
-Pandas	Data loading, cleaning, feature engineering, pivot tables
-NumPy	Numerical operations
-Plotly Express	Bar, line, area charts
-Plotly Graph Objects	Pareto (dual-axis) chart
-Folium	Geographic heatmaps (static + animated)
-Seaborn / Matplotlib	Supplementary plotting
-Jupyter Notebook	Interactive development environment
+
+## 🛠 Tech Stack
+
+| Tool | Version | Use |
+|------|---------|-----|
+| Python | 3.9 | Core language |
+| Pandas | Latest | Data wrangling & pivot tables |
+| NumPy | Latest | Numerical operations |
+| Plotly Express | Latest | Interactive charts |
+| Plotly Graph Objects | Latest | Custom dual-axis Pareto chart |
+| Folium | Latest | Interactive geographic maps |
+| Seaborn / Matplotlib | Latest | Supplementary plots |
+| Jupyter Notebook | Latest | Development environment |
+
 ---
-How to Run
-Clone this repository and navigate to the project folder.
-Place all dataset CSV files in the same directory as the notebook (or update the `DATA_PATH` variable in the first cell).
-Install dependencies:
+
+## ▶️ How to Run
+
+**1. Clone the repository**
 ```bash
-   pip install pandas numpy plotly folium seaborn matplotlib
-   ```
-Open the notebook:
-```bash
-   jupyter notebook uber_analysis_austin_mathew.ipynb
-   ```
-Run all cells top-to-bottom (`Kernel → Restart & Run All`).
-> **Note:** The full `uber-raw-data-janjune-15.csv` file is ~15M rows. The sample version (`_sample.csv`) with ~1M rows is recommended unless you have sufficient RAM.
----
-Project Structure
+git clone https://github.com/YOUR_USERNAME/uber-data-analysis-nyc.git
+cd uber-data-analysis-nyc
 ```
-├── uber_analysis_austin_mathew.ipynb   # Main analysis notebook
-├── uber-raw-data-janjune-15_sample.csv # Jan–Jun 2015 sample data
-├── uber-raw-data-apr14.csv             # Apr 2014 raw data
-├── uber-raw-data-may14.csv             # May 2014 raw data
-├── uber-raw-data-jun14.csv             # Jun 2014 raw data
-├── uber-raw-data-jul14.csv             # Jul 2014 raw data
-├── uber-raw-data-aug14.csv             # Aug 2014 raw data
-├── uber-raw-data-sep14.csv             # Sep 2014 raw data
-├── Uber-Jan-Feb-FOIL.csv               # Active vehicle FOIL data
+
+**2. Install dependencies**
+```bash
+pip install pandas numpy plotly folium seaborn matplotlib jupyter
+```
+
+**3. Add your datasets**
+
+Place all CSV files in the same folder as the notebook, or update `DATA_PATH` in the first cell.
+
+**4. Launch the notebook**
+```bash
+jupyter notebook uber_analysis_austin_mathew.ipynb
+```
+
+**5. Run all cells**
+
+Go to `Kernel → Restart & Run All`
+
+---
+
+## 📁 Project Structure
+
+```
+uber-data-analysis-nyc/
+│
+├── uber_analysis_austin_mathew.ipynb    ← Main analysis notebook
+│
+├── uber-raw-data-janjune-15_sample.csv  ← Jan–Jun 2015 (sample)
+├── uber-raw-data-apr14.csv
+├── uber-raw-data-may14.csv
+├── uber-raw-data-jun14.csv
+├── uber-raw-data-jul14.csv
+├── uber-raw-data-aug14.csv
+├── uber-raw-data-sep14.csv
+├── Uber-Jan-Feb-FOIL.csv                ← Dispatch base vehicle data
+│
 └── README.md
 ```
+
 ---
-Analysis by Austin Mathew
+
+
+Made by **Austin Mathew**
